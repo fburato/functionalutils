@@ -44,6 +44,7 @@ public class ChainComparatorGenerator implements CodeGenerator {
             if (!isTerminal) {
                 addComparatorMethod();
             }
+            chainMethods();
             footer();
         }
 
@@ -98,6 +99,19 @@ public class ChainComparatorGenerator implements CodeGenerator {
             writer.println(String.format("return new %s<>(this.chainableComparator,%s,comparator);",
                     String.format(CLASS_NAME, index + 1), IntStream.rangeClosed(1, index)
                             .mapToObj(i -> String.format("this.comparator%d", i)).collect(Collectors.joining(", "))));
+            writer.println("}");
+        }
+
+        private void chainMethods() {
+            IntStream.rangeClosed(1, index).forEach(this::chainMethod);
+        }
+
+        private void chainMethod(int chainMethodIndex) {
+            writer.println(String.format("public %s<T,%s> chain(Function%d<T,T%d> fieldGetter){", className,
+                    typeDeclaration, chainMethodIndex, chainMethodIndex));
+            writer.println(String.format("this.chainableComparator.chain(fieldGetter.asFunction(),comparator%d);",
+                    chainMethodIndex));
+            writer.println("return this;");
             writer.println("}");
         }
 

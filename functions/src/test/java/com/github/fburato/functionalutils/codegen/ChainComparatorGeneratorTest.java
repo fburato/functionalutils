@@ -1,6 +1,7 @@
 package com.github.fburato.functionalutils.codegen;
 
 import com.github.fburato.functionalutils.api.ChainableComparator;
+import com.github.fburato.functionalutils.api.FunctionLike;
 import com.github.fburato.functionalutils.codegen.compiler.InMemoryJavaCompiler;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -10,6 +11,7 @@ import java.io.StringWriter;
 import java.lang.reflect.Modifier;
 import java.util.*;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -124,8 +126,7 @@ public class ChainComparatorGeneratorTest {
     }
 
     private void verifyConstructorFor(String className, Class<?> chainedComparator) {
-        final var number = Integer
-                .parseInt(className.replace("com.github.fburato.functionalutils.api.ChainComparator", ""));
+        final var number = extractIndex(className);
         final var constructors = chainedComparator.getConstructors();
         assertThat(constructors).hasSize(1);
         final var constructor = constructors[0];
@@ -135,6 +136,10 @@ public class ChainComparatorGeneratorTest {
         final var otherParameters = new LinkedList<>(Arrays.asList(parameters));
         otherParameters.remove(0);
         assertThat(otherParameters).allSatisfy(p -> assertThat(p.getType()).isEqualTo(Comparator.class));
+    }
+
+    private int extractIndex(String className) {
+        return Integer.parseInt(className.replace("com.github.fburato.functionalutils.api.ChainComparator", ""));
     }
 
     @Test
@@ -156,8 +161,7 @@ public class ChainComparatorGeneratorTest {
     }
 
     private void verifyNonTerminalAddComparator(String className, Class<?> chainComparator) throws Exception {
-        final var number = Integer
-                .parseInt(className.replace("com.github.fburato.functionalutils.api.ChainComparator", ""));
+        final var number = extractIndex(className);
         final var addComparator = chainComparator.getMethod("addComparator", Comparator.class);
         assertThat(addComparator.getReturnType().getCanonicalName())
                 .isEqualTo(String.format("com.github.fburato.functionalutils.api.ChainComparator%d", number + 1));
@@ -177,20 +181,20 @@ public class ChainComparatorGeneratorTest {
     @Test
     @DisplayName("generate as many chain method as indexes")
     void chainMethods() {
-        compileNComparators(2).values().forEach(c -> rethrow(() -> {
-            final var basicChainMethod = c.getDeclaredMethod("chain", Function.class, Comparator.class);
-            assertThat(basicChainMethod).isNotNull();
-            assertThat(basicChainMethod.getReturnType()).isEqualTo(c);
-        }));
+        compileNComparators(5).forEach(this::verifyChainMethods);
     }
 
-    private void verifyChainMethod(String name, Class<?> chainedComparator) {
+    private void verifyChainMethods(String name, Class<?> chainedComparator) {
         final var index = extractIndex(name);
-
-    }
-
-    private int extractIndex(String className) {
-        return Integer.parseInt(className.replace("com.github.fburato.functionalutils.api.ChainComparator", ""));
+        final var chainMethods = Arrays.stream(chainedComparator.getMethods())
+                .filter(m -> m.getName().equals("chain") && m.getParameterCount() == 1).collect(Collectors.toList());
+        assertThat(chainMethods).hasSize(index).allSatisfy(m -> {
+            assertThat(Arrays.stream(m.getParameterTypes()).map(Class::getName))
+                    .allMatch(s -> s.startsWith("com.github.fburato.functionalutils.api.Function"));
+            assertThat(Arrays.stream(m.getParameterTypes()))
+                    .allMatch(t -> Arrays.asList(t.getInterfaces()).contains(FunctionLike.class));
+            assertThat(m.getReturnType()).isEqualTo(chainedComparator);
+        });
     }
 
     @FunctionalInterface

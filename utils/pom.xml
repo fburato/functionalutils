@@ -14,4 +14,12 @@
     <name>Utils</name>
     <packaging>jar</packaging>
 
+    <dependencies>
+        <dependency>
+            <groupId>com.github.fburato</groupId>
+            <artifactId>functional-utils-functions</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+    </dependencies>
+
 </project>
