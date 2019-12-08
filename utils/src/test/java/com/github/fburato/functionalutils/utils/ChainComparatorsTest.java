@@ -1,9 +1,7 @@
 package com.github.fburato.functionalutils.utils;
 
 import com.github.fburato.functionalutils.api.*;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 
 import java.util.Comparator;
 import java.util.function.Function;
@@ -74,7 +72,7 @@ class ChainComparatorsTest {
         @Test
         @DisplayName("should return the itself")
         void testReturn() {
-            assertThat(testee.chain(null, null)).isSameAs(testee);
+            assertThat(testee.chain(null, null)).isNotSameAs(testee);
         }
     }
 
@@ -100,9 +98,9 @@ class ChainComparatorsTest {
         }
 
         @Test
-        @DisplayName("should return the itself")
+        @DisplayName("should return a copy of itself")
         void testReturn() {
-            assertThat(testee.chain(Data::getA)).isSameAs(testee);
+            assertThat(testee.chain(Data::getA)).isNotSameAs(testee);
         }
     }
 
@@ -120,6 +118,11 @@ class ChainComparatorsTest {
 
         final ChainComparator1<Data, String> testee = new ChainComparator1<>(mockComparator, cstring);
 
+        @BeforeEach
+        void setUp() {
+            when(mockComparator.chain(any(), any())).thenReturn(mockComparator);
+        }
+
         @Test
         @DisplayName("should return an higher order chain comparator with all the original comparators")
         void testHigherOrder() {
@@ -128,25 +131,23 @@ class ChainComparatorsTest {
             when(f1.asFunction()).thenReturn(expectedF1);
             when(f2.asFunction()).thenReturn(expectedF2);
 
-            ChainComparator2<Data, String, Integer> actual = testee.addComparator(cint);
-            actual.chain(f1);
-            actual.chain(f2);
+            testee.addComparator(cint).chain(f1).chain(f2);
 
             verify(mockComparator).chain(expectedF1, cstring);
             verify(mockComparator).chain(expectedF2, cint);
         }
 
         @Test
-        @DisplayName("should return higher order chain comparator which returns itself on chain")
+        @DisplayName("should return higher order chain comparator which returns a copy of itself on chain")
         void testReturn() {
             ChainComparator2<Data, String, Integer> actual = testee.addComparator(cint);
             ChainComparator2<Data, String, Integer> chain1 = actual.chain(Data::getA);
-            ChainComparator2<Data, String, Integer> chain2 = actual.chain(Data::getB);
-            ChainComparator2<Data, String, Integer> chain3 = actual.chain(Data::getC, Double::compareTo);
+            ChainComparator2<Data, String, Integer> chain2 = chain1.chain(Data::getB);
+            ChainComparator2<Data, String, Integer> chain3 = chain2.chain(Data::getC, Double::compareTo);
 
-            assertThat(chain1).isSameAs(actual);
-            assertThat(chain2).isSameAs(actual);
-            assertThat(chain3).isSameAs(actual);
+            assertThat(chain1).isNotSameAs(actual);
+            assertThat(chain2).isNotSameAs(chain1);
+            assertThat(chain3).isNotSameAs(chain2);
         }
 
         @Test

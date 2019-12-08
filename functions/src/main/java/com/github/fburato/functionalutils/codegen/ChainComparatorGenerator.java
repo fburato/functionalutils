@@ -88,8 +88,10 @@ public class ChainComparatorGenerator implements CodeGenerator {
             writer.println(
                     String.format("public <S> %s<T,%s> chain(Function<T,S> fieldGetter, Comparator<S> comparator){",
                             className, typeDeclaration));
-            writer.println("this.chainableComparator.chain(fieldGetter, comparator);");
-            writer.println("return this;");
+            writer.println(String.format(
+                    "return new %s<>(this.chainableComparator.chain(fieldGetter, comparator), %s);", className,
+                    IntStream.rangeClosed(1, index).mapToObj(i -> String.format("this.comparator%d", i))
+                            .collect(Collectors.joining(", "))));
             writer.println("}");
         }
 
@@ -109,9 +111,10 @@ public class ChainComparatorGenerator implements CodeGenerator {
         private void chainMethod(int chainMethodIndex) {
             writer.println(String.format("public %s<T,%s> chain(Function%d<T,T%d> fieldGetter){", className,
                     typeDeclaration, chainMethodIndex, chainMethodIndex));
-            writer.println(String.format("this.chainableComparator.chain(fieldGetter.asFunction(),comparator%d);",
-                    chainMethodIndex));
-            writer.println("return this;");
+            writer.println(String.format(
+                    "return new %s<>(this.chainableComparator.chain(fieldGetter.asFunction(), comparator%d), %s);",
+                    className, chainMethodIndex, IntStream.rangeClosed(1, index)
+                            .mapToObj(i -> String.format("this.comparator%d", i)).collect(Collectors.joining(", "))));
             writer.println("}");
         }
 

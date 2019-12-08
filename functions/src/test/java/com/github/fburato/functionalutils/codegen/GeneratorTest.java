@@ -18,7 +18,7 @@ public class GeneratorTest {
     @DisplayName("generate Function files in destination directory")
     void testFunction() throws IOException {
         var tempDir = Files.createTempDirectory("destination");
-        Generator.main(new String[]{tempDir.toAbsolutePath().toString(), "3"});
+        Generator.main(new String[] { tempDir.toAbsolutePath().toString(), "3" });
         assertThat(getGenerationDirectory(tempDir)).exists()
                 .isDirectoryContaining(f -> f.getName().equals("Function1.java"))
                 .isDirectoryContaining(f -> f.getName().equals("Function2.java"))
@@ -35,7 +35,7 @@ public class GeneratorTest {
     @DisplayName("generate ChainComparator files in destination directory")
     void testChainComparator() throws IOException {
         var tempDir = Files.createTempDirectory("destination");
-        Generator.main(new String[]{tempDir.toAbsolutePath().toString(), "3"});
+        Generator.main(new String[] { tempDir.toAbsolutePath().toString(), "3" });
         assertThat(getGenerationDirectory(tempDir)).exists()
                 .isDirectoryContaining(f -> f.getName().equals("ChainComparator1.java"))
                 .isDirectoryContaining(f -> f.getName().equals("ChainComparator2.java"))

@@ -1,6 +1,5 @@
 package com.github.fburato.functionalutils.utils;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -60,17 +59,25 @@ class TypeSafeChainComparatorTest {
         }
     }
 
+    @Test
+    @DisplayName("chaining should not mutate previous instances")
+    void testImmutable() {
+        final var data1 = new Data("1", "1", 0, 0);
+        final var data2 = new Data("1", "2", 0, 0);
+        final var comparator1 = TypeSafeChainComparator.create(Data.class).chain(Data::getA, String::compareTo);
+        assertThat(data1).usingComparator(comparator1).isEqualTo(data2);
+        final var comparator2 = comparator1.chain(Data::getA1, String::compareTo);
+        assertThat(data1).usingComparator(comparator1).isEqualTo(data2);
+        assertThat(data1).usingComparator(comparator2).isNotEqualTo(data2);
+    }
+
     @Nested
     @DisplayName("created with create")
     class CreateTest {
 
-        final TypeSafeChainComparator<Data> testee = TypeSafeChainComparator.create();
-
-        @BeforeEach
-        void setUp() {
-            testee.chain(Data::getA, String::compareTo).chain(Data::getA1, String::compareTo)
-                    .chain(Data::getB, Integer::compareTo).chain(Data::getC, Double::compareTo);
-        }
+        final TypeSafeChainComparator<Data> testee = TypeSafeChainComparator.create(Data.class)
+                .chain(Data::getA, String::compareTo).chain(Data::getA1, String::compareTo)
+                .chain(Data::getB, Integer::compareTo).chain(Data::getC, Double::compareTo);
 
         @Test
         @DisplayName("should compare elements in order of chain invocations")
@@ -86,16 +93,12 @@ class TypeSafeChainComparatorTest {
     @Nested
     @DisplayName("created with createNullSafe")
     class TestNullSafe {
-        final TypeSafeChainComparator<Data> testee = TypeSafeChainComparator.createNullSafe();
-
         final Comparator<String> stringLengthComparator = Comparator.comparingInt(String::length);
 
-        @BeforeEach
-        void setUp() {
-            testee.chain(Data::getA, stringLengthComparator).chain(Data::getA1, stringLengthComparator)
-                    .chain(Data::getB, (i1, i2) -> stringLengthComparator.compare(i1.toString(), i2.toString()))
-                    .chain(Data::getC, (d1, d2) -> stringLengthComparator.compare(d1.toString(), d2.toString()));
-        }
+        final TypeSafeChainComparator<Data> testee = TypeSafeChainComparator.createNullSafe(Data.class)
+                .chain(Data::getA, stringLengthComparator).chain(Data::getA1, stringLengthComparator)
+                .chain(Data::getB, (i1, i2) -> stringLengthComparator.compare(i1.toString(), i2.toString()))
+                .chain(Data::getC, (d1, d2) -> stringLengthComparator.compare(d1.toString(), d2.toString()));
 
         @Test
         @DisplayName("should compare elements in order of chain invocations")
@@ -125,7 +128,7 @@ class TypeSafeChainComparatorTest {
 
         final Comparator<String> stringLengthComparator = Comparator.comparingInt(String::length);
 
-        final Comparator<Data> testee = TypeSafeChainComparator.<Data>createNullSafe()
+        final Comparator<Data> testee = TypeSafeChainComparator.createNullSafe(Data.class)
                 .addComparator(stringLengthComparator).addComparator(Integer::compareTo)
                 .addComparator(Double::compareTo).chain(Data::getA1).chain(Data::getA).chain(Data::getC)
                 .chain(Data::getB);
