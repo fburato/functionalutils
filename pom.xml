@@ -4,7 +4,7 @@
 
     <groupId>com.github.fburato</groupId>
     <artifactId>functional-utils</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.1-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Functional utils</name>
     <url>https://github.com/fburato/functionalutils</url>
@@ -14,7 +14,7 @@
         <connection>scm:git:git@github.com:fburato/functionalutils.git</connection>
         <developerConnection>scm:git:git@github.com:fburato/functionalutils.git</developerConnection>
         <url>https://github.com/fburato/functionalutils</url>
-        <tag>functional-utils-1.0.0</tag>
+        <tag>HEAD</tag>
     </scm>
 
     <licenses>
