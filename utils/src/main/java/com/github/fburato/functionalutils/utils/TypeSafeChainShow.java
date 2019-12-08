@@ -66,7 +66,10 @@ public final class TypeSafeChainShow<T> implements ChainableShow<T> {
     public String show(final T t) {
         final String content = sequencer.stream().map(fn -> fn.apply(t))
                 .collect(Collectors.joining(configuration.fieldSeparator));
-        return String.format("%s%s%s%s", configuration.typeShow.apply(clazz), configuration.fieldHeader, content,
+        return String.format("%s%s%s%s",
+                configuration.typeShow.apply(clazz),
+                configuration.fieldHeader,
+                content,
                 configuration.fieldFooter);
     }
 

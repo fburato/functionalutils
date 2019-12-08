@@ -69,7 +69,9 @@ public class ChainShowGenerator implements CodeGenerator {
         private void constructor() {
             final String parameterList = IntStream.rangeClosed(1, index)
                     .mapToObj(i -> String.format("Show<T%d> show%d", i, i)).collect(Collectors.joining(", "));
-            writer.println(String.format("public %s(ChainableShow<T> chainableShow, %s){", className, parameterList));
+            writer.println(String.format("public %s(ChainableShow<T> chainableShow, %s){",
+                    className,
+                    parameterList));
             writer.println("this.chainableShow = chainableShow;");
             writer.println(IntStream.rangeClosed(1, index).mapToObj(i -> String.format("this.show%d = show%d;", i, i))
                     .collect(Collectors.joining("\n")));
@@ -84,26 +86,34 @@ public class ChainShowGenerator implements CodeGenerator {
         private void basicChainMethod() {
             writer.println(String.format("public <S> %s<T,%s> chain(Function<T,S> fieldGetter, Show<S> show){",
                     className, typeDeclaration));
-            writer.println(String.format("return new %s<>(this.chainableShow.chain(fieldGetter, show), %s);", className,
+            writer.println(String.format("return new %s<>(this.chainableShow.chain(fieldGetter, show), %s);",
+                    className,
                     IntStream.rangeClosed(1, index).mapToObj(i -> String.format("this.show%d", i))
                             .collect(Collectors.joining(", "))));
             writer.println("}");
         }
 
         private void standardChainMethod() {
-            writer.println(String.format("public <S> %s<T,%s> standardChain(Function<T,S> fieldGetter){", className,
+            writer.println(String.format("public <S> %s<T,%s> standardChain(Function<T,S> fieldGetter){",
+                    className,
                     typeDeclaration));
             writer.println(String.format("return new %s<>(this.chainableShow.standardChain(fieldGetter), %s);",
-                    className, IntStream.rangeClosed(1, index).mapToObj(i -> String.format("this.show%d", i))
+                    className,
+                    IntStream.rangeClosed(1, index).mapToObj(i -> String.format("this.show%d", i))
                             .collect(Collectors.joining(", "))));
             writer.println("}");
         }
 
         private void addComparatorMethod() {
-            writer.println(String.format("public <T%d> %s<T,%s,T%d> addShow(Show<T%d> show){", index + 1,
-                    String.format(CLASS_NAME, index + 1), typeDeclaration, index + 1, index + 1));
+            writer.println(String.format("public <T%d> %s<T,%s,T%d> addShow(Show<T%d> show){",
+                    index + 1,
+                    String.format(CLASS_NAME, index + 1),
+                    typeDeclaration,
+                    index + 1,
+                    index + 1));
             writer.println(String.format("return new %s<>(this.chainableShow,%s,show);",
-                    String.format(CLASS_NAME, index + 1), IntStream.rangeClosed(1, index)
+                    String.format(CLASS_NAME, index + 1),
+                    IntStream.rangeClosed(1, index)
                             .mapToObj(i -> String.format("this.show%d", i)).collect(Collectors.joining(", "))));
             writer.println("}");
         }
@@ -113,11 +123,16 @@ public class ChainShowGenerator implements CodeGenerator {
         }
 
         private void chainMethod(int chainMethodIndex) {
-            writer.println(String.format("public %s<T,%s> chain(Function%d<T,T%d> fieldGetter){", className,
-                    typeDeclaration, chainMethodIndex, chainMethodIndex));
+            writer.println(String.format("public %s<T,%s> chain(Function%d<T,T%d> fieldGetter){",
+                    className,
+                    typeDeclaration,
+                    chainMethodIndex,
+                    chainMethodIndex));
             writer.println(
                     String.format("return new %s<>(this.chainableShow.chain(fieldGetter.asFunction(), show%d), %s);",
-                            className, chainMethodIndex, IntStream.rangeClosed(1, index)
+                            className,
+                            chainMethodIndex,
+                            IntStream.rangeClosed(1, index)
                                     .mapToObj(i -> String.format("this.show%d", i)).collect(Collectors.joining(", "))));
             writer.println("}");
         }

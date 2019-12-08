@@ -55,7 +55,8 @@ public class ChainComparatorGenerator implements CodeGenerator {
         }
 
         private void classDeclaration() {
-            writer.println(String.format("public final class %s<T,%s> implements Comparator<T> {", className,
+            writer.println(String.format("public final class %s<T,%s> implements Comparator<T> {",
+                    className,
                     typeDeclaration));
         }
 
@@ -70,7 +71,8 @@ public class ChainComparatorGenerator implements CodeGenerator {
             final String parameterList = IntStream.rangeClosed(1, index)
                     .mapToObj(i -> String.format("Comparator<T%d> comparator%d", i, i))
                     .collect(Collectors.joining(", "));
-            writer.println(String.format("public %s(ChainableComparator<T> chainableComparator, %s){", className,
+            writer.println(String.format("public %s(ChainableComparator<T> chainableComparator, %s){",
+                    className,
                     parameterList));
             writer.println("this.chainableComparator = chainableComparator;");
             writer.println(IntStream.rangeClosed(1, index)
@@ -89,7 +91,8 @@ public class ChainComparatorGenerator implements CodeGenerator {
                     String.format("public <S> %s<T,%s> chain(Function<T,S> fieldGetter, Comparator<S> comparator){",
                             className, typeDeclaration));
             writer.println(String.format(
-                    "return new %s<>(this.chainableComparator.chain(fieldGetter, comparator), %s);", className,
+                    "return new %s<>(this.chainableComparator.chain(fieldGetter, comparator), %s);",
+                    className,
                     IntStream.rangeClosed(1, index).mapToObj(i -> String.format("this.comparator%d", i))
                             .collect(Collectors.joining(", "))));
             writer.println("}");
@@ -97,9 +100,14 @@ public class ChainComparatorGenerator implements CodeGenerator {
 
         private void addComparatorMethod() {
             writer.println(String.format("public <T%d> %s<T,%s,T%d> addComparator(Comparator<T%d> comparator){",
-                    index + 1, String.format(CLASS_NAME, index + 1), typeDeclaration, index + 1, index + 1));
+                    index + 1,
+                    String.format(CLASS_NAME, index + 1),
+                    typeDeclaration,
+                    index + 1,
+                    index + 1));
             writer.println(String.format("return new %s<>(this.chainableComparator,%s,comparator);",
-                    String.format(CLASS_NAME, index + 1), IntStream.rangeClosed(1, index)
+                    String.format(CLASS_NAME, index + 1),
+                    IntStream.rangeClosed(1, index)
                             .mapToObj(i -> String.format("this.comparator%d", i)).collect(Collectors.joining(", "))));
             writer.println("}");
         }
@@ -109,11 +117,16 @@ public class ChainComparatorGenerator implements CodeGenerator {
         }
 
         private void chainMethod(int chainMethodIndex) {
-            writer.println(String.format("public %s<T,%s> chain(Function%d<T,T%d> fieldGetter){", className,
-                    typeDeclaration, chainMethodIndex, chainMethodIndex));
+            writer.println(String.format("public %s<T,%s> chain(Function%d<T,T%d> fieldGetter){",
+                    className,
+                    typeDeclaration,
+                    chainMethodIndex,
+                    chainMethodIndex));
             writer.println(String.format(
                     "return new %s<>(this.chainableComparator.chain(fieldGetter.asFunction(), comparator%d), %s);",
-                    className, chainMethodIndex, IntStream.rangeClosed(1, index)
+                    className,
+                    chainMethodIndex,
+                    IntStream.rangeClosed(1, index)
                             .mapToObj(i -> String.format("this.comparator%d", i)).collect(Collectors.joining(", "))));
             writer.println("}");
         }

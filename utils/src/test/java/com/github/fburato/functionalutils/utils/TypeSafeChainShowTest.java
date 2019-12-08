@@ -20,7 +20,8 @@ class TypeSafeChainShowTest {
     @Test
     @DisplayName("chaining should not mutate previous instances")
     void testImmutable() {
-        final var show1 = TypeSafeChainShow.create(TestData.class).chain(TestData::getA, Objects::toString);
+        final var show1 = TypeSafeChainShow.create(TestData.class)
+                .chain(TestData::getA, Objects::toString);
         assertThat(show1.show(data)).isEqualTo("TestData(1)");
         final var show2 = show1.chain(TestData::getA1, Objects::toString);
         assertThat(show1.show(data)).isEqualTo("TestData(1)");
@@ -32,15 +33,19 @@ class TypeSafeChainShowTest {
     class CreateTest {
 
         final ChainableShow<TestData> testee = TypeSafeChainShow.create(TestData.class)
-                .chain(TestData::getA, String::toString).chain(TestData::getA1, String::toString)
-                .chain(TestData::getB, Object::toString).chain(TestData::getC, Object::toString);
+                .chain(TestData::getA, String::toString)
+                .chain(TestData::getA1, String::toString)
+                .chain(TestData::getB, Object::toString)
+                .chain(TestData::getC, Object::toString);
 
         @Test
         @DisplayName("should include only fields in the chaining order")
         void testFields() {
-            final var testee1 = TypeSafeChainShow.create(TestData.class).chain(TestData::getA, Objects::toString)
+            final var testee1 = TypeSafeChainShow.create(TestData.class)
+                    .chain(TestData::getA, Objects::toString)
                     .chain(TestData::getA1, Objects::toString);
-            final var testee2 = TypeSafeChainShow.create(TestData.class).chain(TestData::getA1, Objects::toString)
+            final var testee2 = TypeSafeChainShow.create(TestData.class)
+                    .chain(TestData::getA1, Objects::toString)
                     .chain(TestData::getA, Objects::toString);
 
             assertThat(testee1.show(data)).isEqualTo("TestData(1,2)");
@@ -59,8 +64,10 @@ class TypeSafeChainShowTest {
     class TestNullSafe {
 
         final ChainableShow<TestData> testee = TypeSafeChainShow
-                .createWithConfig(TestData.class, new TypeSafeChainShow.Configuration<>(c -> "MyClass", "{", "}", "/"))
-                .chain(TestData::getA, Objects::toString).chain(TestData::getA1, Objects::toString);
+                .createWithConfig(TestData.class,
+                        new TypeSafeChainShow.Configuration<>(c -> "MyClass", "{", "}", "/"))
+                .chain(TestData::getA, Objects::toString)
+                .chain(TestData::getA1, Objects::toString);
 
         @Test
         @DisplayName("should print based on configuration")
@@ -73,8 +80,12 @@ class TypeSafeChainShowTest {
     @DisplayName("addShow")
     class AddComparatorTest {
         final Show<Integer> integerInHex = Integer::toHexString;
-        final Show<TestData> testee = TypeSafeChainShow.create(TestData.class).addShow(stringWithQuotes)
-                .addShow(integerInHex).chain(TestData::getA).chain(TestData::getA1).chain(TestData::getB)
+        final Show<TestData> testee = TypeSafeChainShow.create(TestData.class)
+                .addShow(stringWithQuotes)
+                .addShow(integerInHex)
+                .chain(TestData::getA)
+                .chain(TestData::getA1)
+                .chain(TestData::getB)
                 .chain(TestData::getC, Objects::toString);
 
         @Test
@@ -87,14 +98,18 @@ class TypeSafeChainShowTest {
     @Nested
     @DisplayName("standardChain")
     class StandardChainTest {
-        final Show<TestData> testee = TypeSafeChainShow.create(TestData.class).addShow(stringWithQuotes)
-                .chain(TestData::getA).chain(TestData::getA1).standardChain(TestData::getB)
+        final Show<TestData> testee = TypeSafeChainShow.create(TestData.class)
+                .addShow(stringWithQuotes)
+                .chain(TestData::getA)
+                .chain(TestData::getA1)
+                .standardChain(TestData::getB)
                 .standardChain(TestData::getC);
 
         @Test
         @DisplayName("should invoke toString null safe")
         void testNullSafe() {
-            assertThat(testee.show(new TestData("a", "b", null, 1.0))).isEqualTo("TestData(\"a\",\"b\",null,1.0)");
+            assertThat(testee.show(new TestData("a", "b", null, 1.0)))
+                    .isEqualTo("TestData(\"a\",\"b\",null,1.0)");
         }
     }
 
