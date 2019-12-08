@@ -113,4 +113,11 @@ class TypeSafeChainShowTest {
         }
     }
 
+    @Test
+    @DisplayName("should return no parameter if nothing is chained")
+    void testEmpty() {
+        final var testee = TypeSafeChainShow.create(TestData.class);
+
+        assertThat(testee.show(data)).isEqualTo("TestData()");
+    }
 }
