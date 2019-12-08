@@ -19,7 +19,21 @@ The latest version of the library contains the following wrappers:
 - [TypeSafeChainShow](https://github.com/fburato/functionalutils/blob/master/utils/src/main/java/com/github/fburato/functionalutils/utils/TypeSafeChainShow.java):
   Allows to create composable, immutable, type-safe, fluent converter of any type into `String`. The conversion
   to string uses a standard configuration which returns a `toString` representation as `<class name>([field1{,field}])`.
-  
+
+The library does not have any external dependency.
+
+## Using
+
+Simply add the core library to your dependencies:
+
+```xml
+<dependency>
+  <groupId>com.github.fburato</groupId>
+  <artifactId>functional-utils-core</artifactId>
+  <version>1.0.0</version>
+</dependency>
+```
+
 ## Builder
 
 Using the builder wrapper requires to define an extension of the `Builder` class with the appropriate type
