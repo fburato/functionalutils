@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/fburato/functionalutils.svg?branch=master)](https://travis-ci.org/fburato/highwheel-modules)
+[![Build Status](https://travis-ci.org/fburato/functionalutils.svg?branch=master)](https://travis-ci.org/fburato/functionalutils)
 # Functional Utils
 
 Functional utils is a micro-library which contains fluent functional wrapper that can be used to ease the definition
