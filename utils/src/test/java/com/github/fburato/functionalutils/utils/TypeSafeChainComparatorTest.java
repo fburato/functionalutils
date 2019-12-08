@@ -10,63 +10,15 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @DisplayName("TypeSafeChainComparator")
 class TypeSafeChainComparatorTest {
-    static class Data {
-        private String a;
-        private String a1;
-        private int b;
-        private double c;
-
-        public Data() {
-        }
-
-        public Data(String a, String a1, int b, double c) {
-            this.a = a;
-            this.a1 = a1;
-            this.b = b;
-            this.c = c;
-        }
-
-        public String getA() {
-            return a;
-        }
-
-        public void setA(String a) {
-            this.a = a;
-        }
-
-        public String getA1() {
-            return a1;
-        }
-
-        public void setA1(String a1) {
-            this.a1 = a1;
-        }
-
-        public int getB() {
-            return b;
-        }
-
-        public void setB(int b) {
-            this.b = b;
-        }
-
-        public double getC() {
-            return c;
-        }
-
-        public void setC(double c) {
-            this.c = c;
-        }
-    }
 
     @Test
     @DisplayName("chaining should not mutate previous instances")
     void testImmutable() {
-        final var data1 = new Data("1", "1", 0, 0);
-        final var data2 = new Data("1", "2", 0, 0);
-        final var comparator1 = TypeSafeChainComparator.create(Data.class).chain(Data::getA, String::compareTo);
+        final var data1 = new TestData("1", "1", 0, 0);
+        final var data2 = new TestData("1", "2", 0, 0);
+        final var comparator1 = TypeSafeChainComparator.create(TestData.class).chain(TestData::getA, String::compareTo);
         assertThat(data1).usingComparator(comparator1).isEqualTo(data2);
-        final var comparator2 = comparator1.chain(Data::getA1, String::compareTo);
+        final var comparator2 = comparator1.chain(TestData::getA1, String::compareTo);
         assertThat(data1).usingComparator(comparator1).isEqualTo(data2);
         assertThat(data1).usingComparator(comparator2).isNotEqualTo(data2);
     }
@@ -75,18 +27,21 @@ class TypeSafeChainComparatorTest {
     @DisplayName("created with create")
     class CreateTest {
 
-        final TypeSafeChainComparator<Data> testee = TypeSafeChainComparator.create(Data.class)
-                .chain(Data::getA, String::compareTo).chain(Data::getA1, String::compareTo)
-                .chain(Data::getB, Integer::compareTo).chain(Data::getC, Double::compareTo);
+        final TypeSafeChainComparator<TestData> testee = TypeSafeChainComparator.create(TestData.class)
+                .chain(TestData::getA, String::compareTo).chain(TestData::getA1, String::compareTo)
+                .chain(TestData::getB, Integer::compareTo).chain(TestData::getC, Double::compareTo);
 
         @Test
         @DisplayName("should compare elements in order of chain invocations")
         void testOrder() {
-            assertThat(testee.compare(new Data("1", null, 345, 234), new Data("2", null, 0, 432))).isLessThan(0);
-            assertThat(testee.compare(new Data("1", "1", 0, 23423.0), new Data("1", "2", 0, 0.0))).isLessThan(0);
-            assertThat(testee.compare(new Data("1", "1", 1, 0.0), new Data("1", "1", 0, 23423.0))).isGreaterThan(0);
-            assertThat(testee.compare(new Data("1", "1", 1, 0.0), new Data("1", "1", 1, 1.0))).isLessThan(0);
-            assertThat(testee.compare(new Data("1", "1", 1, 1.0), new Data("1", "1", 1, 1.0))).isEqualTo(0);
+            assertThat(testee.compare(new TestData("1", null, 345, 234), new TestData("2", null, 0, 432)))
+                    .isLessThan(0);
+            assertThat(testee.compare(new TestData("1", "1", 0, 23423.0), new TestData("1", "2", 0, 0.0)))
+                    .isLessThan(0);
+            assertThat(testee.compare(new TestData("1", "1", 1, 0.0), new TestData("1", "1", 0, 23423.0)))
+                    .isGreaterThan(0);
+            assertThat(testee.compare(new TestData("1", "1", 1, 0.0), new TestData("1", "1", 1, 1.0))).isLessThan(0);
+            assertThat(testee.compare(new TestData("1", "1", 1, 1.0), new TestData("1", "1", 1, 1.0))).isEqualTo(0);
         }
     }
 
@@ -95,30 +50,36 @@ class TypeSafeChainComparatorTest {
     class TestNullSafe {
         final Comparator<String> stringLengthComparator = Comparator.comparingInt(String::length);
 
-        final TypeSafeChainComparator<Data> testee = TypeSafeChainComparator.createNullSafe(Data.class)
-                .chain(Data::getA, stringLengthComparator).chain(Data::getA1, stringLengthComparator)
-                .chain(Data::getB, (i1, i2) -> stringLengthComparator.compare(i1.toString(), i2.toString()))
-                .chain(Data::getC, (d1, d2) -> stringLengthComparator.compare(d1.toString(), d2.toString()));
+        final TypeSafeChainComparator<TestData> testee = TypeSafeChainComparator.createNullSafe(TestData.class)
+                .chain(TestData::getA, stringLengthComparator).chain(TestData::getA1, stringLengthComparator)
+                .chain(TestData::getB, (i1, i2) -> stringLengthComparator.compare(i1.toString(), i2.toString()))
+                .chain(TestData::getC, (d1, d2) -> stringLengthComparator.compare(d1.toString(), d2.toString()));
 
         @Test
         @DisplayName("should compare elements in order of chain invocations")
         void testOrder() {
-            assertThat(testee.compare(new Data("1", null, 345, 234), new Data("11", null, 0, 432))).isLessThan(0);
-            assertThat(testee.compare(new Data("1", "1", 0, 23423.0), new Data("1", "11", 0, 0.0))).isLessThan(0);
-            assertThat(testee.compare(new Data("1", "1", 10, 0.0), new Data("1", "1", 0, 23423.0))).isGreaterThan(0);
-            assertThat(testee.compare(new Data("1", "1", 1, 0.0), new Data("1", "1", 1, 10.0))).isLessThan(0);
-            assertThat(testee.compare(new Data("1", "1", 1, 1.0), new Data("1", "1", 1, 1.0))).isEqualTo(0);
+            assertThat(testee.compare(new TestData("1", null, 345, 234), new TestData("11", null, 0, 432)))
+                    .isLessThan(0);
+            assertThat(testee.compare(new TestData("1", "1", 0, 23423.0), new TestData("1", "11", 0, 0.0)))
+                    .isLessThan(0);
+            assertThat(testee.compare(new TestData("1", "1", 10, 0.0), new TestData("1", "1", 0, 23423.0)))
+                    .isGreaterThan(0);
+            assertThat(testee.compare(new TestData("1", "1", 1, 0.0), new TestData("1", "1", 1, 10.0))).isLessThan(0);
+            assertThat(testee.compare(new TestData("1", "1", 1, 1.0), new TestData("1", "1", 1, 1.0))).isEqualTo(0);
         }
 
         @Test
         @DisplayName("should not fail with null values")
         void testNullSafety() {
-            assertThat(testee.compare(new Data(null, null, 345, 234), new Data("11", null, 0, 432))).isLessThan(0);
-            assertThat(testee.compare(new Data(null, "1", 0, 23423.0), new Data(null, "11", 0, 0.0))).isLessThan(0);
-            assertThat(testee.compare(new Data(null, null, 10, 0.0), new Data(null, null, 0, 23423.0)))
+            assertThat(testee.compare(new TestData(null, null, 345, 234), new TestData("11", null, 0, 432)))
+                    .isLessThan(0);
+            assertThat(testee.compare(new TestData(null, "1", 0, 23423.0), new TestData(null, "11", 0, 0.0)))
+                    .isLessThan(0);
+            assertThat(testee.compare(new TestData(null, null, 10, 0.0), new TestData(null, null, 0, 23423.0)))
                     .isGreaterThan(0);
-            assertThat(testee.compare(new Data(null, null, 1, 0.0), new Data(null, null, 1, 10.0))).isLessThan(0);
-            assertThat(testee.compare(new Data(null, null, 1, 1.0), new Data(null, null, 1, 1.0))).isEqualTo(0);
+            assertThat(testee.compare(new TestData(null, null, 1, 0.0), new TestData(null, null, 1, 10.0)))
+                    .isLessThan(0);
+            assertThat(testee.compare(new TestData(null, null, 1, 1.0), new TestData(null, null, 1, 1.0))).isEqualTo(0);
         }
     }
 
@@ -128,19 +89,22 @@ class TypeSafeChainComparatorTest {
 
         final Comparator<String> stringLengthComparator = Comparator.comparingInt(String::length);
 
-        final Comparator<Data> testee = TypeSafeChainComparator.createNullSafe(Data.class)
+        final Comparator<TestData> testee = TypeSafeChainComparator.createNullSafe(TestData.class)
                 .addComparator(stringLengthComparator).addComparator(Integer::compareTo)
-                .addComparator(Double::compareTo).chain(Data::getA1).chain(Data::getA).chain(Data::getC)
-                .chain(Data::getB);
+                .addComparator(Double::compareTo).chain(TestData::getA1).chain(TestData::getA).chain(TestData::getC)
+                .chain(TestData::getB);
 
         @Test
         @DisplayName("should reuse same comparator for same types")
         void testSameComparator() {
-            assertThat(testee.compare(new Data("111", "1", 345, 234), new Data("11", "11", 0, 432))).isLessThan(0);
-            assertThat(testee.compare(new Data("", "111", 0, 23423.0), new Data("a", "11", 0, 0.0))).isGreaterThan(0);
-            assertThat(testee.compare(new Data("", "1", 10, 0.0), new Data(null, null, 0, 23423.0))).isGreaterThan(0);
-            assertThat(testee.compare(new Data("", null, 100, 0.0), new Data("", null, 1, 10.0))).isLessThan(0);
-            assertThat(testee.compare(new Data(null, null, 1, 1.0), new Data(null, null, 1, 1.0))).isEqualTo(0);
+            assertThat(testee.compare(new TestData("111", "1", 345, 234), new TestData("11", "11", 0, 432)))
+                    .isLessThan(0);
+            assertThat(testee.compare(new TestData("", "111", 0, 23423.0), new TestData("a", "11", 0, 0.0)))
+                    .isGreaterThan(0);
+            assertThat(testee.compare(new TestData("", "1", 10, 0.0), new TestData(null, null, 0, 23423.0)))
+                    .isGreaterThan(0);
+            assertThat(testee.compare(new TestData("", null, 100, 0.0), new TestData("", null, 1, 10.0))).isLessThan(0);
+            assertThat(testee.compare(new TestData(null, null, 1, 1.0), new TestData(null, null, 1, 1.0))).isEqualTo(0);
         }
     }
 

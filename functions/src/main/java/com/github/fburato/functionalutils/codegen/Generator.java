@@ -15,14 +15,17 @@ public class Generator {
         final File baseDirectory = new File(baseDir + File.separator + apiPackage);
         baseDirectory.mkdirs();
         IntStream.rangeClosed(1, types).forEach(i -> {
-            final String functionFile = baseDirectory.getAbsolutePath() + File.separator + "Function" + i + ".java";
+            final String functionFile = fileName(baseDirectory, "Function", i);
+            final String chainComparatorFile = fileName(baseDirectory, "ChainComparator", i);
+            final String chainShowFile = fileName(baseDirectory, "ChainShow", i);
             generateFile(functionFile, new FunctionGenerator(i));
-        });
-        IntStream.rangeClosed(1, types).forEach(i -> {
-            final String chainComparatorFile = baseDirectory.getAbsolutePath() + File.separator + "ChainComparator" + i
-                    + ".java";
             generateFile(chainComparatorFile, new ChainComparatorGenerator(i, i == types));
+            generateFile(chainShowFile, new ChainShowGenerator(i, i == types));
         });
+    }
+
+    private static String fileName(File basePath, String baseName, int suffix) {
+        return basePath.getAbsolutePath() + File.separator + baseName + suffix + ".java";
     }
 
     private static void generateFile(String fileName, CodeGenerator generator) {

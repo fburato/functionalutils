@@ -41,4 +41,15 @@ public class GeneratorTest {
                 .isDirectoryContaining(f -> f.getName().equals("ChainComparator2.java"))
                 .isDirectoryContaining(f -> f.getName().equals("ChainComparator3.java"));
     }
+
+    @Test
+    @DisplayName("generate ChainShow files in destination directory")
+    void testChainShow() throws IOException {
+        var tempDir = Files.createTempDirectory("destination");
+        Generator.main(new String[] { tempDir.toAbsolutePath().toString(), "3" });
+        assertThat(getGenerationDirectory(tempDir)).exists()
+                .isDirectoryContaining(f -> f.getName().equals("ChainShow1.java"))
+                .isDirectoryContaining(f -> f.getName().equals("ChainShow2.java"))
+                .isDirectoryContaining(f -> f.getName().equals("ChainShow3.java"));
+    }
 }

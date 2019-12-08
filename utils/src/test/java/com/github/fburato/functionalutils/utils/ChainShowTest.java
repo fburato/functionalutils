@@ -1,16 +1,20 @@
 package com.github.fburato.functionalutils.utils;
 
 import com.github.fburato.functionalutils.api.*;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 
 import java.util.Comparator;
+import java.util.Objects;
 import java.util.function.Function;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
-@DisplayName("ChainComparator")
-class ChainComparatorsTest {
+@DisplayName("ChainShow")
+class ChainShowTest {
 
     static class Data {
         private String a;
@@ -55,22 +59,22 @@ class ChainComparatorsTest {
     @DisplayName("base chain")
     class BaseChainTest {
         @SuppressWarnings("unchecked")
-        final ChainableComparator<Data> mockComparator = mock(ChainableComparator.class);
-        final ChainComparator1<Data, String> testee = new ChainComparator1<>(mockComparator, null);
+        final ChainableShow<Data> mockShow = mock(ChainableShow.class);
+        final ChainShow1<Data, String> testee = new ChainShow1<>(mockShow, null);
 
         @Test
-        @DisplayName("should invoke constructor chainable comparator with arguments")
+        @DisplayName("should invoke constructor chainable show with arguments")
         void testCall() {
             Function<Data, String> f = Data::getA;
-            Comparator<String> c = String::compareTo;
+            Show<String> c = String::toString;
 
             testee.chain(f, c);
 
-            verify(mockComparator).chain(f, c);
+            verify(mockShow).chain(f, c);
         }
 
         @Test
-        @DisplayName("should not return itself on chain")
+        @DisplayName("should not return itself")
         void testReturn() {
             assertThat(testee.chain(null, null)).isNotSameAs(testee);
         }
@@ -80,12 +84,12 @@ class ChainComparatorsTest {
     @DisplayName("implicit chain")
     class ImplicitChainTest {
         @SuppressWarnings("unchecked")
-        final ChainableComparator<Data> mockComparator = mock(ChainableComparator.class);
-        final Comparator<String> c = String::compareTo;
-        final ChainComparator1<Data, String> testee = new ChainComparator1<>(mockComparator, c);
+        final ChainableShow<Data> mockShow = mock(ChainableShow.class);
+        final Show<String> c = String::toString;
+        final ChainShow1<Data, String> testee = new ChainShow1<>(mockShow, c);
 
         @Test
-        @DisplayName("should invoke constructor chainable comparator with construction comparator")
+        @DisplayName("should invoke constructor chainable show with construction comparator")
         void testConstruction() {
             @SuppressWarnings("unchecked")
             Function1<Data, String> f = mock(Function1.class);
@@ -94,7 +98,7 @@ class ChainComparatorsTest {
 
             testee.chain(f);
 
-            verify(mockComparator).chain(expected, c);
+            verify(mockShow).chain(expected, c);
         }
 
         @Test
@@ -105,45 +109,45 @@ class ChainComparatorsTest {
     }
 
     @Nested
-    @DisplayName("addComparator")
-    class TestAddComparator {
+    @DisplayName("addShow")
+    class TestAddShow {
         @SuppressWarnings("unchecked")
-        final ChainableComparator<Data> mockComparator = mock(ChainableComparator.class);
+        final ChainableShow<Data> mockShow = mock(ChainableShow.class);
         @SuppressWarnings("unchecked")
         final Function1<Data, String> f1 = mock(Function1.class);
         @SuppressWarnings("unchecked")
         final Function2<Data, Integer> f2 = mock(Function2.class);
-        final Comparator<String> cstring = String::compareTo;
-        final Comparator<Integer> cint = Integer::compareTo;
+        final Show<String> cstring = String::toString;
+        final Show<Integer> cint = Object::toString;
 
-        final ChainComparator1<Data, String> testee = new ChainComparator1<>(mockComparator, cstring);
+        final ChainShow1<Data, String> testee = new ChainShow1<>(mockShow, cstring);
 
         @BeforeEach
         void setUp() {
-            when(mockComparator.chain(any(), any())).thenReturn(mockComparator);
+            when(mockShow.chain(any(), any())).thenReturn(mockShow);
         }
 
         @Test
-        @DisplayName("should return an higher order chain comparator with all the original comparators")
+        @DisplayName("should return an higher order chain show with all the original shows")
         void testHigherOrder() {
             Function<Data, String> expectedF1 = Data::getA;
             Function<Data, Integer> expectedF2 = Data::getB;
             when(f1.asFunction()).thenReturn(expectedF1);
             when(f2.asFunction()).thenReturn(expectedF2);
 
-            testee.addComparator(cint).chain(f1).chain(f2);
+            testee.addShow(cint).chain(f1).chain(f2);
 
-            verify(mockComparator).chain(expectedF1, cstring);
-            verify(mockComparator).chain(expectedF2, cint);
+            verify(mockShow).chain(expectedF1, cstring);
+            verify(mockShow).chain(expectedF2, cint);
         }
 
         @Test
-        @DisplayName("should return higher order chain comparator which returns a copy of itself on chain")
+        @DisplayName("should return higher order chain show which returns a copy of itself on chain")
         void testReturn() {
-            ChainComparator2<Data, String, Integer> actual = testee.addComparator(cint);
-            ChainComparator2<Data, String, Integer> chain1 = actual.chain(Data::getA);
-            ChainComparator2<Data, String, Integer> chain2 = chain1.chain(Data::getB);
-            ChainComparator2<Data, String, Integer> chain3 = chain2.chain(Data::getC, Double::compareTo);
+            ChainShow2<Data, String, Integer> actual = testee.addShow(cint);
+            ChainShow2<Data, String, Integer> chain1 = actual.chain(Data::getA);
+            ChainShow2<Data, String, Integer> chain2 = chain1.chain(Data::getB);
+            ChainShow2<Data, String, Integer> chain3 = chain2.chain(Data::getC, Object::toString);
 
             assertThat(chain1).isNotSameAs(actual);
             assertThat(chain2).isNotSameAs(chain1);
@@ -151,15 +155,15 @@ class ChainComparatorsTest {
         }
 
         @Test
-        @DisplayName("should return an higher order chain comparator that has the basic chain")
+        @DisplayName("should return an higher order chain show that has the basic chain")
         void testBasicChain() {
             Function<Data, Object> expectedFbasic = d -> new Object();
-            Comparator<Object> cobj = (o1, o2) -> -1;
+            Show<Object> cobj = Object::toString;
 
-            ChainComparator2<Data, String, Integer> actual = testee.addComparator(cint);
+            ChainShow2<Data, String, Integer> actual = testee.addShow(cint);
             actual.chain(expectedFbasic, cobj);
 
-            verify(mockComparator).chain(expectedFbasic, cobj);
+            verify(mockShow).chain(expectedFbasic, cobj);
         }
 
     }
